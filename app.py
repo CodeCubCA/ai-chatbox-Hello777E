@@ -19,11 +19,20 @@ def init_groq_client():
     """Initialize the Groq API client"""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        st.error("❌ Please set GROQ_API_KEY in your .env file")
-        st.stop()
-    return Groq(api_key=api_key)
+        return None
+    try:
+        return Groq(api_key=api_key)
+    except Exception as e:
+        st.error(f"❌ Failed to initialize Groq client: {str(e)}")
+        return None
 
 client = init_groq_client()
+
+# Check if client is initialized
+if client is None:
+    st.error("❌ Please set GROQ_API_KEY in your .env file or Streamlit secrets")
+    st.info("💡 Get your API key from: https://console.groq.com/keys")
+    st.stop()
 
 # Initialize chat history in session state
 if "messages" not in st.session_state:
