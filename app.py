@@ -8,7 +8,7 @@ load_dotenv()
 
 # Configure the page
 st.set_page_config(
-    page_title="AI Study Buddy",
+    page_title="Study Buddy",
     page_icon="📚",
     layout="centered"
 )
@@ -44,7 +44,7 @@ if "messages" not in st.session_state:
     ]
 
 # Page title
-st.title("📚 AI Study Buddy")
+st.title("📚 Study Buddy")
 st.markdown("Hi! I'm your AI learning companion. Ask me anything!")
 
 # Sidebar - Settings and features
