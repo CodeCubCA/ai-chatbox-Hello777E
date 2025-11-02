@@ -44,7 +44,7 @@ if "messages" not in st.session_state:
     ]
 
 # Page title
-st.title("📚 Study Buddy")
+st.title("📚 the best best best studdy buddy")
 st.markdown("Hi! I'm your AI learning companion. Ask me anything!")
 
 # Sidebar - Settings and features
