@@ -229,18 +229,20 @@ if prompt := st.chat_input(get_text("chat_input_placeholder")):
                 elif msg["role"] == "assistant":
                     chat_history.append({"role": "model", "parts": [msg["content"]]})
 
-            # Create model with system instruction
-            model = genai.GenerativeModel(
-                'gemini-pro',
-                system_instruction=system_instruction
-            )
+            # Create model - gemini-pro doesn't support system_instruction, so we'll prepend it to the first message
+            model = genai.GenerativeModel('gemini-pro')
+
+            # If this is the first message and we have a system instruction, prepend it to the prompt
+            enhanced_prompt = prompt
+            if system_instruction and len(chat_history) <= 1:
+                enhanced_prompt = f"{system_instruction}\n\nUser question: {prompt}"
 
             # Start chat with history (excluding the last user message which we'll send separately)
             chat = model.start_chat(history=chat_history[:-1] if len(chat_history) > 1 else [])
 
             # Send the current prompt with streaming
             response = chat.send_message(
-                prompt,
+                enhanced_prompt,
                 stream=True,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
