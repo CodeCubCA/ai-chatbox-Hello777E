@@ -231,7 +231,7 @@ if prompt := st.chat_input(get_text("chat_input_placeholder")):
 
             # Create model with system instruction
             model = genai.GenerativeModel(
-                'gemini-1.5-flash',
+                'gemini-pro',
                 system_instruction=system_instruction
             )
 
