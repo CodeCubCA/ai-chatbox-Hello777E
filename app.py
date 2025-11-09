@@ -229,8 +229,8 @@ if prompt := st.chat_input(get_text("chat_input_placeholder")):
                 elif msg["role"] == "assistant":
                     chat_history.append({"role": "model", "parts": [msg["content"]]})
 
-            # Create model - gemini-pro doesn't support system_instruction, so we'll prepend it to the first message
-            model = genai.GenerativeModel('gemini-pro')
+            # Create model - using gemini-1.5-pro
+            model = genai.GenerativeModel('gemini-1.5-pro')
 
             # If this is the first message and we have a system instruction, prepend it to the prompt
             enhanced_prompt = prompt
