@@ -1,5 +1,5 @@
 import streamlit as st
-from groq import Groq
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 from datetime import datetime
@@ -24,8 +24,8 @@ TRANSLATIONS = {
         "tip_4": "💪 Get study method suggestions",
         "chat_input_placeholder": "Type your question...",
         "error_prefix": "❌ Error occurred:",
-        "api_key_error": "❌ Please set GROQ_API_KEY in your .env file or Streamlit secrets",
-        "api_key_info": "💡 Get your API key from: https://console.groq.com/keys",
+        "api_key_error": "❌ Please set GEMINI_API_KEY in your .env file or Streamlit secrets",
+        "api_key_info": "💡 Get your API key from: https://aistudio.google.com/app/apikey",
         "chat_history_title": "Study Buddy - Chat History",
         "exported_on": "Exported on:",
         "user_label": "User:",
@@ -47,8 +47,8 @@ TRANSLATIONS = {
         "tip_4": "💪 获取学习方法建议",
         "chat_input_placeholder": "输入你的问题...",
         "error_prefix": "❌ 发生错误：",
-        "api_key_error": "❌ 请在.env文件或Streamlit密钥中设置GROQ_API_KEY",
-        "api_key_info": "💡 在此获取API密钥：https://console.groq.com/keys",
+        "api_key_error": "❌ 请在.env文件或Streamlit密钥中设置GEMINI_API_KEY",
+        "api_key_info": "💡 在此获取API密钥：https://aistudio.google.com/app/apikey",
         "chat_history_title": "学习伙伴 - 聊天记录",
         "exported_on": "导出时间：",
         "user_label": "用户：",
@@ -73,23 +73,24 @@ def get_text(key):
     """Get translated text based on current language"""
     return TRANSLATIONS[st.session_state.language].get(key, key)
 
-# Initialize Groq client
-@st.cache_resource
-def init_groq_client():
-    """Initialize the Groq API client"""
-    api_key = os.getenv("GROQ_API_KEY")
+# Initialize Google Gemini API
+def init_gemini_api():
+    """Initialize the Google Gemini API"""
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        return None
+        return False
     try:
-        return Groq(api_key=api_key)
+        genai.configure(api_key=api_key)
+        return True
     except Exception as e:
-        st.error(f"❌ Failed to initialize Groq client: {str(e)}")
-        return None
+        st.error(f"❌ Failed to initialize Gemini API: {str(e)}")
+        return False
 
-client = init_groq_client()
+# Initialize API
+api_initialized = init_gemini_api()
 
-# Check if client is initialized
-if client is None:
+# Check if API is initialized
+if not api_initialized:
     st.error(get_text("api_key_error"))
     st.info(get_text("api_key_info"))
     st.stop()
@@ -216,19 +217,41 @@ if prompt := st.chat_input(get_text("chat_input_placeholder")):
         full_response = ""
 
         try:
-            # Call Groq API with streaming
-            stream = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=st.session_state.messages,
-                temperature=0.7,
-                max_tokens=2048,
-                stream=True
+            # Prepare chat history for Gemini (convert from session state format)
+            chat_history = []
+            system_instruction = None
+
+            for msg in st.session_state.messages:
+                if msg["role"] == "system":
+                    system_instruction = msg["content"]
+                elif msg["role"] == "user":
+                    chat_history.append({"role": "user", "parts": [msg["content"]]})
+                elif msg["role"] == "assistant":
+                    chat_history.append({"role": "model", "parts": [msg["content"]]})
+
+            # Create model with system instruction
+            model = genai.GenerativeModel(
+                'gemini-1.5-flash',
+                system_instruction=system_instruction
+            )
+
+            # Start chat with history (excluding the last user message which we'll send separately)
+            chat = model.start_chat(history=chat_history[:-1] if len(chat_history) > 1 else [])
+
+            # Send the current prompt with streaming
+            response = chat.send_message(
+                prompt,
+                stream=True,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=2048,
+                )
             )
 
             # Display response word by word
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    full_response += chunk.choices[0].delta.content
+            for chunk in response:
+                if chunk.text:
+                    full_response += chunk.text
                     message_placeholder.markdown(full_response + "▌")
 
             # Display complete response
