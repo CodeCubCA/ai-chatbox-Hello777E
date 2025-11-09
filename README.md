@@ -17,12 +17,12 @@ An interactive AI chatbot application designed to help students learn and unders
 
 - **Python** - Core programming language
 - **Streamlit** - Web application framework
-- **Groq API** - AI language model provider (Llama 3.3 70B Versatile)
+- **Google Gemini API** - AI language model provider (Gemini 2.5 Flash)
 
 ## Prerequisites
 
 - Python 3.7 or higher
-- Groq API key ([Get one here](https://console.groq.com/))
+- Google Gemini API key ([Get one here](https://aistudio.google.com/app/apikey))
 
 ## Installation
 
@@ -42,9 +42,9 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-4. Edit `.env` and add your Groq API key:
+4. Edit `.env` and add your Google Gemini API key:
 ```
-GROQ_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 ## Usage
@@ -84,13 +84,13 @@ ai-chatbox/
 ## Dependencies
 
 - `streamlit>=1.31.0` - Web UI framework
-- `groq>=0.11.0` - LLM API client
+- `google-generativeai>=0.3.0` - Google Gemini API client
 - `python-dotenv>=1.0.0` - Environment variable management
 
 ## Configuration
 
 The AI is configured with:
-- **Model**: Llama 3.3 70B Versatile
+- **Model**: Google Gemini 2.5 Flash
 - **Temperature**: 0.7 (balanced creativity and accuracy)
 - **Max Tokens**: 2048 per response
 - **Streaming**: Enabled for real-time responses
@@ -106,5 +106,5 @@ This project is part of an educational assignment.
 ## Acknowledgments
 
 - Built with [Streamlit](https://streamlit.io/)
-- Powered by [Groq](https://groq.com/)
-- Uses Meta's Llama 3.3 70B model
+- Powered by [Google Gemini](https://ai.google.dev/)
+- Uses Google's Gemini 2.5 Flash model
